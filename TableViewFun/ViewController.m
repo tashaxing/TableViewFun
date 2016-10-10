@@ -6,6 +6,8 @@
 //  Copyright © 2016年 tashaxing. All rights reserved.
 //
 
+// ---- 列表实现悬停、索引、折叠 ---- //
+
 #import "ViewController.h"
 
 @interface ViewController ()<UITableViewDelegate, UITableViewDataSource>
@@ -13,6 +15,8 @@
     UITableView *myTableView; // 列表
     NSArray *sectionTitles; // 每个分区的标题
     NSArray *contentsArray; // 每行的内容
+    
+    NSMutableArray *isShowArray; // 存储每个section是否展开的bool数组
 }
 @end
 
@@ -35,6 +39,8 @@
                            @[@"G1",@"G2",@"G3", @"XX", @"XX"],
                            @[@"H1",@"H2",@"H3", @"XX", @"XX"],
                            nil];
+    
+    isShowArray = (NSMutableArray *)@[@YES, @YES, @YES, @YES, @YES, @YES, @YES, @YES];
     
     myTableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 50, self.view.frame.size.width, self.view.frame.size.height) style:UITableViewStylePlain];
     
@@ -64,7 +70,7 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
 {
-    return 20;
+    return 30;
 }
 
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
@@ -76,7 +82,7 @@
         headerView = [[UITableViewHeaderFooterView alloc] initWithReuseIdentifier:headerViewId];
     }
         
-    UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, myTableView.frame.size.width, 20)];
+    UIButton *titleButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, myTableView.frame.size.width, 30)];
     [titleLabel setBackgroundColor:[UIColor greenColor]];
     titleLabel.text = sectionTitles[section];
     titleLabel.textAlignment = NSTextAlignmentCenter;
