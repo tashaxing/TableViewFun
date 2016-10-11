@@ -16,7 +16,7 @@
     NSArray *sectionTitles; // 每个分区的标题
     NSArray *contentsArray; // 每行的内容
     
-    NSMutableArray *isShowArray; // 存储每个section是否展开的bool数组
+    NSMutableArray *isShowArray; // 存储每个section是否展开的int数组，可以标志字，或者bool
 }
 @end
 
@@ -40,7 +40,11 @@
                            @[@"H1",@"H2",@"H3", @"XX", @"XX"],
                            nil];
     
-    isShowArray = (NSMutableArray *)@[@YES, @YES, @YES, @YES, @YES, @YES, @YES, @YES];
+    isShowArray = [[NSMutableArray alloc] init];
+    for (int i = 0; i < sectionTitles.count; i++)
+    {
+        [isShowArray addObject:[NSNumber numberWithInt:0]];
+    }
     
     myTableView = [[UITableView alloc] initWithFrame:CGRectMake(0, 50, self.view.frame.size.width, self.view.frame.size.height) style:UITableViewStylePlain];
     
@@ -65,7 +69,18 @@
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return [contentsArray[section] count];
+    NSInteger numberOfRows;
+    if ([isShowArray[section] integerValue] == 0)
+    {
+        // 隐藏了就显示0行
+        numberOfRows = 0;
+        
+    }
+    else
+    {
+        numberOfRows = [contentsArray[section] count];
+    }
+    return numberOfRows;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section
@@ -73,6 +88,7 @@
     return 30;
 }
 
+// headerview，在里面添加时间响应
 - (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section
 {
     static NSString *headerViewId = @"headerViewId";
@@ -83,12 +99,38 @@
     }
         
     UIButton *titleButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, myTableView.frame.size.width, 30)];
-    [titleLabel setBackgroundColor:[UIColor greenColor]];
-    titleLabel.text = sectionTitles[section];
-    titleLabel.textAlignment = NSTextAlignmentCenter;
-    [headerView addSubview:titleLabel];
+    [titleButton setBackgroundColor:[UIColor greenColor]];
+    [titleButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [titleButton setTitle:sectionTitles[section] forState:UIControlStateNormal];
+    [titleButton setTag:1000 + section];
+    [headerView addSubview:titleButton];
+    
+    [titleButton addTarget:self
+                    action:@selector(tableHeaderClicked:)
+          forControlEvents:UIControlEventTouchUpInside];
+    
     
     return headerView;
+}
+
+- (void)tableHeaderClicked:(UIButton *)sender
+{
+    NSInteger section = sender.tag - 1000;
+    if ([isShowArray[section] intValue] == 0)
+    {
+        // 展开
+        [isShowArray replaceObjectAtIndex:section withObject:[NSNumber numberWithInt:1]];
+        
+        
+    }
+    else
+    {
+        // 折叠
+        isShowArray[section] = [NSNumber numberWithInt:0];
+    }
+    
+    // 折叠动画效果
+    [myTableView reloadSections:[NSIndexSet indexSetWithIndex:section] withRowAnimation:UITableViewRowAnimationFade];
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -148,11 +190,11 @@
 - (NSInteger)tableView:(UITableView *)tableView sectionForSectionIndexTitle:(NSString *)title atIndex:(NSInteger)index
 {
     NSLog(@"clicked section: %ld", index);
-    // 获取所点目录对应的indexPath值
-    NSIndexPath *selectIndexPath = [NSIndexPath indexPathForRow:0 inSection:index];
-    
-    // 让table滚动到对应的indexPath位置
-    [tableView scrollToRowAtIndexPath:selectIndexPath atScrollPosition:UITableViewScrollPositionBottom animated:YES];
+//    // 获取所点目录对应的indexPath值
+//    NSIndexPath *selectIndexPath = [NSIndexPath indexPathForRow:0 inSection:index];
+//    
+//    // 让table滚动到对应的indexPath位置
+//    [tableView scrollToRowAtIndexPath:selectIndexPath atScrollPosition:UITableViewScrollPositionBottom animated:YES];
     
     return index;
 }
